@@ -1,47 +1,167 @@
-# Library Circulation Analytics
-**Project 2** | *Professor Montalvo*  
-**By Muhammad Jawad Magsi**
+# 📚 Library Circulation Analytics  
+**Project 2** | Professor Montalvo  
+**By Muhammad Jawad Magsi**  
+*Completed: October 24, 2025*
 
-A **SQLite-powered library analytics system** tracking books, loans, fines, and staff performance. Built with ERD, schema, data import, 15 analytical queries, 3 views, data quality checks, and performance optimization.
-
----
-
-## Project Summary
-
-| Week | Deliverable | Status |
-|------|-----------|--------|
-| **1** | ERD (dbdiagram.io) | Done |
-| **2** | `library_schema.sql` | Done |
-| **3** | CSV → SQLite Import | Done |
-| **4** | Queries #1–#8 | Done |
-| **5** | Queries #9–#15 + Views | Done |
-| **6** | DQ Checks + Index Tuning | Done |
+A **complete SQLite-based library management and analytics system** built over 6 weeks.  
+Includes ERD, schema creation, data import with staging fixes, analytical SQL queries, database views, data quality checks, and performance optimization.
 
 ---
 
-## ERD (Designed in dbdiagram.io)
+## 🧠 Project Overview
+This project simulates a **Library Circulation System** to track and analyze:
+- Books, Authors, Members, Staff, Loans, and Fines  
+- Circulation patterns, overdue rates, and fine collections  
+- Staff performance and member activity  
+- Data quality and indexing for performance improvement  
 
-```dbml
-Table Author { AuthorID int [pk], Name varchar, Nationality varchar, BirthYear int }
-Table Book { BookID int [pk], Title varchar, AuthorID int [ref: > Author.AuthorID], ISBN varchar [unique], Genre varchar, YearPublished int, Status varchar }
-Table Member { MemberID int [pk], Name varchar, Email varchar [unique], Phone varchar, Address varchar, MembershipDate date }
-Table Staff { StaffID int [pk], Name varchar, Role varchar, Email varchar [unique] }
-Table Loan { LoanID int [pk], BookID int [ref: > Book.BookID], MemberID int [ref: > Member.MemberID], StaffID int [ref: > Staff.StaffID], LoanDate date, DueDate date, ReturnDate date }
-Table Fine { FineID int [pk], LoanID int [ref: > Loan.LoanID], Amount decimal, Status varchar, Date date }
+The project was implemented using **SQLite** and **dbdiagram.io** with structured weekly milestones.
 
-PRAGMA foreign_keys = ON;
+---
 
-CREATE TABLE Author (AuthorID INTEGER PRIMARY KEY, Name TEXT NOT NULL, Nationality TEXT, BirthYear INTEGER);
-CREATE TABLE Book (BookID INTEGER PRIMARY KEY, Title TEXT NOT NULL, AuthorID INTEGER NOT NULL, ISBN TEXT UNIQUE, Genre TEXT, YearPublished INTEGER CHECK (YearPublished > 0), Status TEXT CHECK (Status IN ('Available','CheckedOut','Lost','Damaged')), FOREIGN KEY (AuthorID) REFERENCES Author(AuthorID));
-CREATE TABLE Member (MemberID INTEGER PRIMARY KEY, Name TEXT NOT NULL, Email TEXT UNIQUE NOT NULL, Phone TEXT, Address TEXT, MembershipDate TEXT NOT NULL);
-CREATE TABLE Staff (StaffID INTEGER PRIMARY KEY, Name TEXT NOT NULL, Role TEXT CHECK (Role IN ('Librarian','Assistant','Admin')), Email TEXT UNIQUE);
-CREATE TABLE Loan (LoanID INTEGER PRIMARY KEY, BookID INTEGER NOT NULL, MemberID INTEGER NOT NULL, StaffID INTEGER NOT NULL, LoanDate TEXT NOT NULL, DueDate TEXT NOT NULL, ReturnDate TEXT, FOREIGN KEY (BookID) REFERENCES Book(BookID), FOREIGN KEY (MemberID) REFERENCES Member(MemberID), FOREIGN KEY (StaffID) REFERENCES Staff(StaffID), CHECK (DueDate > LoanDate));
-CREATE TABLE Fine (FineID INTEGER PRIMARY KEY, LoanID INTEGER NOT NULL, Amount NUMERIC CHECK (Amount >= 0), Status TEXT CHECK (Status IN ('Unpaid','Paid','Waived')), Date TEXT NOT NULL, FOREIGN KEY (LoanID) REFERENCES Loan(LoanID));
+## 🗂️ Week 1 – ERD Design
+Created an **Entity Relationship Diagram (ERD)** using **dbdiagram.io** to define relationships between:
+- Author  
+- Book  
+- Member  
+- Staff  
+- Loan  
+- Fine  
 
-INSERT INTO Author SELECT * FROM Author_stagging;
-INSERT INTO Book SELECT BookID, Title, AuthorID, ISBN, Genre, YearPublished, Status FROM Book_stagging;
-INSERT INTO Member SELECT * FROM Member_stagging;
-INSERT INTO Staff SELECT * FROM Staff_stagging;
-INSERT INTO Loan SELECT * FROM Loan_stagging;
-INSERT INTO Fine SELECT * FROM Fine_stagging;
+📄 *Deliverables:* `ERD.png` + dbdiagram.io link  
+
+---
+
+## 🧱 Week 2 – Schema Creation
+Designed normalized database tables with:
+- Primary Keys and Foreign Keys  
+- Unique and Check Constraints  
+- Referential Integrity  
+
+Example:
+```sql
+CHECK (Status IN ('Available', 'CheckedOut', 'Lost', 'Damaged'));
+CHECK (DueDate > LoanDate);
+```
+
+---
+
+## 💾 Week 3 – Sample Data Import
+
+Built datasets in **Google Sheets**, exported as **CSV**, and imported into **SQLite**.  
+Used **staging tables** and `INSERT ... SELECT` commands to resolve import errors and ensure clean data loading.
+
+📄 **Deliverables:**  
+`authors.csv`, `books.csv`, `members.csv`, `loans.csv`, `fines.csv`
+
+---
+
+## 📊 Week 4 – First Reports (Queries #1–#8)
+
+Analytical SQL queries for core library operations:
+
+1. List all books with their authors  
+2. Count books per author  
+3. List members with overdue books  
+4. Total fines collected (paid only)  
+5. Books currently checked out  
+6. Top 5 members with most loans  
+7. Average fine amount by status  
+8. Loans processed by each staff member  
+
+📄 **Deliverable:** `reports.sql`
+
+---
+
+## 📈 Week 5 – Final Reports & Views (Queries #9–#15)
+
+Advanced analytical queries providing deeper insights:
+
+- Loans per genre  
+- Average loan duration  
+- Members with unpaid fines  
+- Most active staff  
+- Monthly loan summary  
+- Overdue rate (%)  
+- Top 5 most borrowed books  
+
+### 📘 Database Views
+| View | Description |
+|------|--------------|
+| `v_patron_activity` | Member activity summary (loans, fines, durations) |
+| `v_branch_performance` | Staff performance (loans handled, fines collected) |
+| `v_catalog_status` | Book availability and genre breakdown |
+
+📄 **Deliverables:**  
+`final_reports.sql`, `views.sql`
+
+---
+
+## 🧩 Week 6 – Data Quality & Performance
+
+### ✅ Data Quality Checks (`dq_checks.sql`)
+Ensured data accuracy and consistency with 5 validation queries:
+
+1. Missing member emails  
+2. Books without valid authors  
+3. Loans with invalid dates  
+4. Fines linked to nonexistent loans  
+5. Duplicate ISBNs  
+
+✅ All checks passed successfully — no data errors found.
+
+---
+
+### ⚡ Performance Optimization (`performance.md`)
+Used **EXPLAIN QUERY PLAN** to compare execution **before and after indexing**.
+
+**Example 1 – Member Loan Lookup**
+```sql
+CREATE INDEX idx_member_name ON Member(Name);
+```
+**Example 2 – Book Genre Filter**
+```sql
+CREATE INDEX idx_book_genre ON Book(Genre);
+```
+📈 **Result:** Significant reduction in table scans and improved query speed.
+
+---
+
+## 🧾 Deliverables Summary
+
+| Week | Deliverables | Files |
+|------|---------------|-------|
+| 1 | ERD | `ERD.png` |
+| 2 | Schema | `library_schema.sql` |
+| 3 | Sample Data | `*.csv` |
+| 4 | Reports | `reports.sql` |
+| 5 | Final Reports & Views | `final_reports.sql`, `views.sql` |
+| 6 | Data Quality & Performance | `dq_checks.sql`, `performance.md` |
+
+---
+
+## ⚙️ Tools & Technologies
+- **SQLite Online**  
+- **dbdiagram.io**  
+- **Google Sheets**  
+- **VS Code / SQL Editor**  
+- **GitHub**
+
+---
+
+## 💡 Key Insights
+- Identified top genres and most borrowed books  
+- Measured staff performance and member activity  
+- Analyzed overdue rate and fine collection trends  
+- Ensured clean, validated, and indexed database for optimized performance  
+
+---
+
+## ✍️ Author
+**Muhammad Jawad Magsi**  
+📧 mmagsi@saintpeters.edu
+
+
+
+
 
